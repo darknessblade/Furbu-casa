@@ -1,0 +1,79 @@
+esphome:
+  name: furbie_controller
+  platform: ESP32
+  board: m5stack-atom-echo
+
+wifi:
+  ssid: "YOUR_SSID"
+  password: "YOUR_PASSWORD"
+
+api:
+
+ota:
+
+logger:
+
+sensor:
+  - platform: ultraschall
+    id: voice_sensor
+
+light:
+  - platform: neopixelbus
+    type: GRB
+    name: "Furbie Eyes"
+    id: furbie_eyes
+    pin: GPIOXX # Pin for WS2812B LEDs
+    num_leds: 2
+
+output:
+  - platform: stepper
+    id: furbie_motor
+    step_pin: GPIOXX
+    dir_pin: GPIOXX
+    sleep_pin: GPIOXX
+    max_speed: 1000 steps/s
+
+switch:
+  - platform: template
+    name: "Furbie Motor Toggle"
+    id: motor_toggle
+    turn_on_action:
+      - stepper.set_target:
+          id: furbie_motor
+          value: 10000 # Example steps, adjust as needed
+    turn_off_action:
+      - stepper.set_target:
+          id: furbie_motor
+          value: 0
+
+number:
+  - platform: template
+    name: "Motor Run Time"
+    id: motor_run_time
+    min_value: 1
+    max_value: 60
+    step: 1
+    unit_of_measurement: 's'
+    optimistic: true
+    restore_value: true
+    set_action:
+      - lambda: |-
+          auto call = id(motor_toggle).turn_on();
+          call.perform();
+          auto turn_off = id(motor_toggle).turn_off();
+          App.scheduler.set_timeout(x * 1000, [turn_off]() { turn_off.perform(); });
+
+binary_sensor:
+  - platform: voice_assistant
+    name: "Voice Command"
+    on_state:
+      then:
+        - light.turn_on:
+            id: furbie_eyes
+            brightness: 100%
+            red: 255
+            green: 0
+            blue: 0 # Example color, can be user-defined
+        - number.set:
+            id: motor_run_time
+            value: !lambda 'return id(motor_run_time).state;'

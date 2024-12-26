@@ -1,0 +1,79 @@
+esphome:
+  name: furby_controller
+  platform: ESP32
+  board: m5stack-atom-s3
+
+wifi:
+  ssid: "YOUR_SSID"
+  password: "YOUR_PASSWORD"
+
+# API for communication with Home Assistant
+api:
+
+# Enable logging
+logger:
+
+ota:
+
+# Output for controlling the LEDs
+output:
+  - platform: ledc
+    pin: GPIO32  # Assuming GPIO32 for the first LED
+    id: eye_led_1
+  - platform: ledc
+    pin: GPIO33  # Assuming GPIO33 for the second LED
+    id: eye_led_2
+
+# Light for the eyes of the Furby
+light:
+  - platform: monochromatic
+    name: "Furby Left Eye"
+    output: eye_led_1
+  - platform: monochromatic
+    name: "Furby Right Eye"
+    output: eye_led_2
+
+# Control the motor
+motor:
+  - platform: stepper
+    id: furby_motor
+    step_pin: GPIO26  # Connect DRV8825's STEP pin here
+    dir_pin: GPIO27   # Connect DRV8825's DIR pin here
+    sleep_pin: GPIO25 # Optional, connect if available on DRV8825
+    max_speed: 100 steps/s
+
+# Define a switch for the motor control
+switch:
+  - platform: template
+    name: "Furby Motor"
+    turn_on_action:
+      - motor.step:
+          id: furby_motor
+          steps: 1000  # Example number, adjust based on what moves the motor enough
+    turn_off_action:
+      - motor.stop:
+          id: furby_motor
+
+# Input number for setting motor run time
+number:
+  - platform: template
+    name: "Motor Run Time"
+    id: motor_run_time
+    unit_of_measurement: 's'
+    min_value: 1
+    max_value: 300
+    step: 1
+    mode: box
+    on_value:
+      then:
+        - lambda: |-
+            // Here you would implement the logic to run the motor for the set time
+            // This is a placeholder for actual implementation in Home Assistant automation
+
+# Notes for hardware connections
+```c
+#note: GPIO32 connected to data pin of first SK6812 LED (left eye)
+#note: GPIO33 connected to data pin of second SK6812 LED (right eye)
+#note: GPIO26 connected to STEP pin of DRV8825 on M5stack ATOMIC Stepmotor Base
+#note: GPIO27 connected to DIR pin of DRV8825 on M5stack ATOMIC Stepmotor Base
+#note: GPIO25 connected to SLEEP pin of DRV8825 if available, otherwise leave disconnected
