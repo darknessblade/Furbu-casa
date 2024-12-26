@@ -1,7 +1,7 @@
 # Furbu-casa
 ESP home furby control [1998] for home-assistant/esphome
 
-Note: I am no coder by any means the 2 listed text files with the YAML code are made with help of AI, 
+Note: I am no coder by any means, the 2 listed text files with the YAML code are made with help of AI [X/GROK], 
 I have not tested the code yet, and I might revise it depending on what motor-controller I will use myself.
 
 The code is currently only suitable to send motion commands and make the eyes a different color, I plan on adding VOICE support later in the future, where Furbu-casa responds to voice/audio and starts moving.
